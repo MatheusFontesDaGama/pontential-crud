@@ -5,24 +5,35 @@ namespace App\Service;
 use App\Models\Developer;
 use App\Repository\DeveloperRepository;
 use Exception;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DeveloperService 
 {
     private $developerRepository;
-    
+    private $statusCodeNotFound = 404;
     function __construct(DeveloperRepository $developerRepository)
     {
         $this->developerRepository = $developerRepository;
     }
 
-    public function buscarDesenvolvedores(): array
+    public function buscarDesenvolvedores(array $filtros): array
     {
-        $desenvolvedores = $this->developerRepository->buscarDesenvolvedores();
+        $desenvolvedores = $this->developerRepository->buscarTodosOsDesenvolvedores();
 
         if(empty($desenvolvedores)) {
-            throw new Exception("Nenhum desenvolvedor encontrado", 404);
+            throw new Exception("Nenhum desenvolvedor encontrado", $this->statusCodeNotFound);
+        }
+    
+        return $desenvolvedores;
+    }
+
+    public function buscarDesenvolvedoresComFiltros(array $filtros)
+    {
+        $desenvolvedores = $this->developerRepository->buscarDesenvolvedoresComFiltros($filtros);
+
+        if(empty($desenvolvedores)) {
+            throw new Exception("Nenhum desenvolvedor encontrado", $this->statusCodeNotFound);
         }
 
         return $desenvolvedores;
@@ -33,7 +44,7 @@ class DeveloperService
         $desenvolvedor = $this->developerRepository->buscarDesenvolvedorPorId($id);
 
         if(empty($desenvolvedor)) {
-            throw new Exception("Nenhum desenvolvedor encontrado", 404);
+            throw new Exception("Nenhum desenvolvedor encontrado", $this->statusCodeNotFound);
         }
 
         return $desenvolvedor;
@@ -41,6 +52,10 @@ class DeveloperService
 
     public function inserirDesenvolvedor(array $dadosDesenvolvedor): void
     {
+        $dataNascimento  = date_create($dadosDesenvolvedor['datanascimento']);
+        date_format($dataNascimento, "Y-m-d");
+        
+        $dadosDesenvolvedor['datanascimento'] = $dataNascimento;
         $this->developerRepository->inserirDesenvolvedor($dadosDesenvolvedor);
     }
 

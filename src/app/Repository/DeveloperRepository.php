@@ -13,9 +13,36 @@ class DeveloperRepository
         $this->developer = $developer;
     }
 
-    public function buscarDesenvolvedores(): array
+    public function buscarTodosOsDesenvolvedores(): array
     {
         return $this->developer->all()->toArray();
+    }
+
+    public function buscarDesenvolvedoresComFiltros(array $filtros)
+    {
+        $queryBuilder = $this->developer;
+
+        if ($filtros['nome']) {
+            $queryBuilder->where('nome', 'like', '%' . $filtros['nome'] . '%');
+        }
+
+        if ($filtros['sexo']) {
+            $queryBuilder->where('sexo', '=', $filtros['sexo']);
+        }
+
+        if ($filtros['idade']) {
+            $queryBuilder->where('idade', '=', $filtros['idade']);
+        }
+
+        if ($filtros['hobby']) {
+            $queryBuilder->where('hobby', 'like', '%' . $filtros['hobby'] . '%');
+        }
+
+        if ($filtros['datanascimento']) {
+            $queryBuilder->where('hobby', '=', $filtros['datanascimento']);
+        }
+
+        return $queryBuilder->paginate(15);
     }
 
     public function buscarDesenvolvedorPorId(int $id): ?Developer
